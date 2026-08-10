@@ -10,3 +10,22 @@ La versión inicial permite registrar y consultar pagos de matrículas. Contiene
 
 ```powershell
 py -m pytest -q
+
+## Hotfix CR-001
+
+Se implementó una corrección para impedir el registro duplicado de pagos cuando una transacción es reenviada o procesada simultáneamente. El sistema valida la unicidad del identificador, conserva el pago original y genera un error controlado ante un reintento.
+
+### Cambios realizados
+
+- Control de identificadores de transacción duplicados.
+- Protección frente a solicitudes concurrentes.
+- Conservación del primer pago registrado.
+- Actualización de las pruebas automatizadas.
+- Validación mediante la simulación del incidente INC-001.
+- Documentación del análisis de impacto y del plan de rollback.
+
+### Validación
+
+```powershell
+py -m pytest -q
+py -m scripts.reproducir_incidente
