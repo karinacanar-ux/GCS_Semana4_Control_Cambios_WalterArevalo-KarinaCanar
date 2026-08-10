@@ -1,42 +1,65 @@
 from src.pagos import SistemaPagos
 
 
-def reproducir_incidente():
+def ejecutar_simulacion():
     sistema = SistemaPagos()
 
-    # Se procesan 99 transacciones diferentes.
-    for numero in range(1, 100):
-        sistema.registrar_pago(
-            id_transaccion=f"TX-{numero:03d}",
-            estudiante=f"Estudiante {numero}",
-            valor=100.00
-        )
+    operaciones = [
+        {
+            "id_transaccion": f"TX-{numero:03d}",
+            "estudiante": f"Estudiante {numero}",
+            "valor": 100.00,
+        }
+        for numero in range(1, 100)
+    ]
 
-    # El sistema reintenta una transacción ya procesada.
-    sistema.registrar_pago(
-        id_transaccion="TX-050",
-        estudiante="Estudiante 50",
-        valor=100.00
+    # Reintento de una transacción ya procesada.
+    operaciones.append(
+        {
+            "id_transaccion": "TX-050",
+            "estudiante": "Estudiante 50",
+            "valor": 100.00,
+        }
     )
 
-    pagos = sistema.obtener_pagos()
-    identificadores = [pago["id_transaccion"] for pago in pagos]
+    operaciones_aceptadas = 0
+    operaciones_rechazadas = 0
 
-    total_registros = len(identificadores)
-    transacciones_unicas = len(set(identificadores))
-    registros_duplicados = total_registros - transacciones_unicas
-    porcentaje_duplicacion = registros_duplicados / total_registros * 100
+    for operacion in operaciones:
+        try:
+            sistema.registrar_pago(
+                operacion["id_transaccion"],
+                operacion["estudiante"],
+                operacion["valor"],
+            )
+            operaciones_aceptadas += 1
+        except ValueError as error:
+            operaciones_rechazadas += 1
+            print(f"Reintento rechazado: {error}")
 
-    print("=== REPRODUCCIÓN DEL INCIDENTE INC-001 ===")
-    print(f"Operaciones procesadas: {total_registros}")
-    print(f"Transacciones únicas: {transacciones_unicas}")
+    pagos_registrados = sistema.obtener_pagos()
+
+    identificadores_unicos = {
+        pago["id_transaccion"]
+        for pago in pagos_registrados
+    }
+
+    registros_duplicados = (
+        len(pagos_registrados) - len(identificadores_unicos)
+    )
+
+    print("\nRESULTADO DE LA VALIDACIÓN DEL HOTFIX")
+    print(f"Operaciones procesadas: {len(operaciones)}")
+    print(f"Operaciones aceptadas: {operaciones_aceptadas}")
+    print(f"Operaciones rechazadas: {operaciones_rechazadas}")
+    print(f"Transacciones únicas: {len(identificadores_unicos)}")
     print(f"Registros duplicados: {registros_duplicados}")
-    print(f"Porcentaje de duplicación: {porcentaje_duplicacion:.2f}%")
 
-    if registros_duplicados > 0:
-        print("Resultado: INCIDENTE REPRODUCIDO")
-        print("Causa: no existe control para impedir IDs repetidos.")
+    if registros_duplicados == 0 and operaciones_rechazadas == 1:
+        print("Resultado: INCIDENTE CORREGIDO")
+    else:
+        print("Resultado: INCIDENTE NO CORREGIDO")
 
 
 if __name__ == "__main__":
-    reproducir_incidente()
+    ejecutar_simulacion()
