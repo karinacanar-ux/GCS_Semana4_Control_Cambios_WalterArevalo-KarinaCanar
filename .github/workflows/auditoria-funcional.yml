@@ -1,0 +1,38 @@
+name: Auditoría funcional de pagos
+
+on:
+  push:
+    branches:
+      - test/pagos-duplicados-issue-4
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas-funcionales:
+    name: Validar pagos duplicados
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obtener repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Ejecutar pruebas
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m pytest -v
+      
